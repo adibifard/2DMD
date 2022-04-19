@@ -6,7 +6,8 @@
 #define cutoff 1
 
 // This is the entering point of the program
-// Units: distance=nm, time=fs, 
+// Units: distance=nm, time=fs, Energy=Kj, 
+// Simulation of an NVT ensemble with Periodic Boundary Conditions
 int main()
 {
 
@@ -17,6 +18,9 @@ int main()
 	double tf =20000 ;// in fs
 	int NTsteps = std::round(tf/dt);
 	
+	// Set forcefield (LJ) parameters
+	double sigma =1 ; // in Angstrom
+	double eps =1 ;   // 
 	
 
 	// Set box dimensions
@@ -38,14 +42,17 @@ int main()
 	{
 
 		// Divide particles into bins (By Meisam)
+		for (size_t i = 0; i < Na; i++) 
+		{
+			BinParticles(Atoms[i], BinSize);
+		}
 
-
-		// Apply pair-wise forces (By Anishumitra)
+		// Apply pair-wise forces (By Meisam)
 		for (size_t i = 0; i < Na; i++)
 		{
 			for (size_t j = 0; j < Na; j++) // this is an O(n^2) implementation that we will need to change it after implementing the Binning function into the code
 			{
-				ApplyForce(Atoms[i], Atoms[j]); // Please complete the ApplyForce function
+				ApplyForce(Atoms[i], Atoms[j]); // Almost completed
 			}
 		}
 
@@ -55,7 +62,7 @@ int main()
 			VelVerlt(Atoms[i]); // Please complete the vel-verlet function
 		}
 
-		// Determine the instantaneous pressure and temperature of the system (By Meisam)
+		// Determine the instantaneous pressure and temperature of the system (By Meisam and Anishumitra)
 
 
 	}
