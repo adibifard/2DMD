@@ -63,6 +63,7 @@ typedef struct atom
 
 void InitAtomsPos(std::vector<atom> &Atoms, double L_Box);
 void InitAtomsVel(std::vector<atom> &Atoms, double T);
+double setBoxSize(const double density, const int N);
 void BinParticles(atom& particle, double BinSize);
 void VelVerlt(atom &particle);
 void ApplyForce(atom& Atoms_i, atom& Atoms_j);
