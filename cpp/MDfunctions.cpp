@@ -20,24 +20,20 @@ void InitAtomsPos(std::vector<atom> &Atoms, double LBox)
    n = int(ceil(pow(Atoms.size(), 1.0/3)));
 
    //  spacing between atoms along a given direction
-   a = L / n;
+   a = LBox / n;
    
    //  index for number of particles assigned positions
    p = 0;
    //  initialize positions
    for (i=0; i<n; i++) {
      for (j=0; j<n; j++) {
-       for (k=0; k<n; k++) {
-         if (p<N) {
-
-           r[p][0] = (i + 0.5)*pos;
-           r[p][1] = (j + 0.5)*pos;
-           r[p][2] = (k + 0.5)*pos;
+         if (p<Atoms.size()) {
+           Atoms[p].pos()= [(i + 0.5)*a,(j + 0.5)*a];
          }
          p++;
        }
      }
-   }
+   
 }
 
 // A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
