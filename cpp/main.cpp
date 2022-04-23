@@ -19,7 +19,7 @@ int main()
 	int NTsteps = std::round(tf/dt);
 	
 	// Set forcefield (LJ) parameters
-	double sigma =1 ; // in Angstrom
+	double sigma =1 ; // in nm
 	double eps =1 ;   // 
 	
 

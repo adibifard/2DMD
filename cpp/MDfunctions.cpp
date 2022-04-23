@@ -1,19 +1,21 @@
 #include "MDfunctions.h"
 
-
+using std::pow;
 // This is the cpp file used to code the essential functions needed for our 2DMD simulator
 
 
+
 // A function to initialize the atoms' positions
-void InitAtomsPos(std:vector<atom> &Atoms, double L_Box)
+void InitAtomsPos(std::vector<atom> &Atoms, double L_Box)
 {
 	// Uniform distribution of the atoms
 
 }
 
-// A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the specified temperature
-void InitAtomsVel(std:vector<atom> &Atoms, double T)
+// A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
+void InitAtomsVel(std::vector<atom> &Atoms, double T)
 {
+
 	for (size_t i=0;i<Atoms.size();i++)
 	{
 		double alpha = std::sqrt(kB * T / Atoms[i].m);
@@ -22,21 +24,31 @@ void InitAtomsVel(std:vector<atom> &Atoms, double T)
 	
 }
 
-// This function determines the bining index each particle lives in
-void BinParticles(atom &particle,double BinSize)
+// This function determines the bining index of each particle 
+void BinParticles(atom &particle,const double BinSize)
 {
-	particle.binIJ[0] = std::ceil(particle.r[0] / binSize);// i of the bin
-	particle.binIJ[1] = std::ceil(particle.r[1] / binSize);// j of the bin
+	TwoDvec<int> tmpbinIJ = particle.pos.ceil(BinSize);
+	particle.binIJ = tmpbinIJ;
+	
 }
 
 
 // This function calculates the pair-wise force between the i-th and the j-th particle
-void ApplyForce(atom &Atoms_i, atom Atoms_j, double sig, double eps)
+void ApplyForce(atom& Atoms_i, atom Atoms_j, double sig, double eps)
 {
 	// Lennard-Jone Potential
-	std::vector<double> rij = Atoms_i.r - Atoms_j.r;
 
-	Atoms_i.f += 4 * eps * (std::pow(sig/rij,12)-std::pow(sig / rij, 6));
+	// Magnitude of the force between particles i and j 
+	TwoDvec<double> rij = Atoms_i.pos - Atoms_j.pos;
+	double r = rij.norm();
+	// The direction of the force between particles i and j 
+	TwoDvec<double> nij = rij / r;
+	
+	double Fij = 4 * eps * (12 * pow(sig, 12) / pow(r, 13) - 6 * pow(sig, 6) / pow(r, 7));
+
+	// Update the force components for the i-th particle in 2D
+	Atoms_i.f = Atoms_i.f -  Atoms_i.f* Fij;
+
 }
 
 // This function is applied over each particle separately, after force calculations.
@@ -45,7 +57,6 @@ void VelVerlt(atom &particle)
 {
 
 }
-
 
 
 
