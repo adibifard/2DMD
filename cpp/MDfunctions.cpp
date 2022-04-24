@@ -17,7 +17,7 @@ void InitAtomsPos(std::vector<atom> &Atoms, double LBox)
    double a;
 
    // Number of atoms in each direction
-   n = int(ceil(pow(Atoms.size(), 1.0/3)));
+   n = int(ceil(pow(Atoms.size(), 1.0/2)));
 
    //  spacing between atoms along a given direction
    a = LBox / n;
@@ -86,7 +86,23 @@ void ApplyForce(atom& Atoms_i, atom Atoms_j, double sig, double eps)
 // Basically, this function updates the current position and velocity of the particle using the calculated force per particle. 
 void VelVerlt(atom &Atom) 
 {
+int i, j,n,p;
+ n = int(ceil(pow(Atoms.size(), 1.0/2)));
+ //  Compute accelerations from forces at current position
+  computeAccelerations();
+  //  Update positions and velocity with current velocity and acceleration
+  //printf("  Updated Positions!\n");
+  //  index for number of particles assigned positions
+   p = 0;
+   //  initialize positions
+   for (p=0; i<Atoms.size(); p++) {
+     
+      Atoms[p].pos() += Atoms[p].v()*dt + 0.5*Atoms[p].acc()*dt*dt;
 
+      Atoms[p].v += 0.5*Atoms[p].acc()*dt;
+    }
+    //printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
+  
 }
 
 
