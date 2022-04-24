@@ -43,6 +43,7 @@ void InitAtomsVel(std::vector<atom> &Atoms, double T)
 	for (size_t i=0;i<Atoms.size();i++)
 	{
 		double alpha = std::sqrt(kB * T / Atoms[i].m);
+		Atoms[i].v=gaussdist() //need to assign gauss function here
 
 	}
 	
@@ -88,7 +89,7 @@ void VelVerlt(atom &Atom)
 {
  //  Compute accelerations from forces at current position
 
-     
+     // need to call Applyforce function
       Atom.pos() += Atom.v()*dt + 0.5*Atom.f()*dt*dt/Atom.m;
 
       Atom.v += 0.5*Atom.f()*dt/Atom.m;
