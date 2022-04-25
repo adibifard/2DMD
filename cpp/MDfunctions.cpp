@@ -26,14 +26,20 @@ void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na)
 	//   //  index for number of particles assigned positions
 	p = 0;
 	//   //  initialize positions
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < n; j++) {
-			if (p < Na) {
-				Atoms[p].pos = { (i + 0.5) * a,(j + 0.5) * a };
-			}
-			p++;
-		}
-	}
+	for (i=0; i<n; i++) {
+     for (j=0; j<n; j++) {
+		 if (p < Na) {
+			 Atoms[p].pos = { (i)*a,(j)*a }; \\atom at the origin
+				 p = p + 1;
+			 Atoms[p].pos = { (i)*a,(j + 0.5) * a }; \\atom at one edge
+				 p = p + 1;
+			 Atoms[p].pos = { (i + 0.5) * a,(j)*a }; \\atom at the other edge
+				 p = p + 1;
+			 Atoms[p].pos = { (i + 0.5) * a,(j + 0.5) * a }; \\atom diagonal from the origin
+				 p = p + 1;
+		 }
+       }
+     }
 }
 
 // A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
@@ -100,6 +106,14 @@ void VelVerlt(atom &Atom, double dt)
 	Atom.pos = Atom.pos + Atom.v * dt + Atom.f * (pow(dt, 2) / (2 * Atom.m));
 
 	Atom.v = Atom.v + Atom.f * (dt / Atom.m);
+	//periodic boundary condition
+	Atom.pos += Atom.v*dt +Atom.f*0.5 * dt * dt / Atom.m
+		if Atom.pos < 0 {
+			Atom.pos = Atom.pos+LBox
+         }
+	if Atom.pos > LBox{
+		Atom.pos = Atpm.pos-LBox
+		}
   
 }
 
