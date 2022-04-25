@@ -1,4 +1,5 @@
 #include "MDfunctions.h"
+#include <random>
 
 using std::pow;
 // This is the cpp file used to code the essential functions needed for our 2DMD simulator
@@ -6,44 +7,48 @@ using std::pow;
 
 
 // A function to initialize the atoms' positions
-void InitAtomsPos(std::vector<atom> &Atoms, double LBox)
-{
-	// Uniform distribution of the atoms
-	for (size_t i=0;i<Atoms.size();i++)
-	{
-		
-	}
-   int n, p, i, j;
-   double a;
-
-   // Number of atoms in each direction
-   n = int(ceil(pow(Atoms.size(), 1.0/2)));
-
-   //  spacing between atoms along a given direction
-   a = LBox / n;
-   
-   //  index for number of particles assigned positions
-   p = 0;
-   //  initialize positions
-   for (i=0; i<n; i++) {
-     for (j=0; j<n; j++) {
-         if (p<Atoms.size()) {
-           Atoms[p].pos()= [(i + 0.5)*a,(j + 0.5)*a];
-         }
-         p++;
-       }
-     }
-   
-}
+//void InitAtomsPos(std::vector<atom> &Atoms, double LBox)
+//{
+//	// Uniform distribution of the atoms
+//	for (size_t i=0;i<Atoms.size();i++)
+//	{
+//		
+//	}
+//   int n, p, i, j;
+//   double a;
+//
+//   // Number of atoms in each direction
+//   n = int(ceil(pow(Atoms.size(), 1.0/2)));
+//
+//   //  spacing between atoms along a given direction
+//   a = LBox / n;
+//   
+//   //  index for number of particles assigned positions
+//   p = 0;
+//   //  initialize positions
+//   for (i=0; i<n; i++) {
+//     for (j=0; j<n; j++) {
+//         if (p<Atoms.size()) {
+//           Atoms[p].pos()= [(i + 0.5)*a,(j + 0.5)*a];
+//         }
+//         p++;
+//       }
+//     }
+//   
+//}
 
 // A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
-void InitAtomsVel(std::vector<atom> &Atoms, double T)
+void InitAtomsVel(std::vector<atom> &Atoms, double T, int Na)
 {
-
-	for (size_t i=0;i<Atoms.size();i++)
+	std::random_device myseed;
+	std::mt19937 Myengine(myseed());
+	for (size_t i = 0; i < Na; i++)
 	{
-		double alpha = std::sqrt(kB * T / Atoms[i].m);
-		Atoms[i].v=gaussdist() //need to assign gauss function here
+		double SIG = std::sqrt(kB * T / Atoms[i].m);
+		double Mean = 0;
+		std::normal_distribution<double> NormalDist(Mean, SIG);
+
+		Atoms[i].v = {NormalDist(Myengine),NormalDist(Myengine) };
 
 	}
 	
@@ -94,7 +99,6 @@ void VelVerlt(atom &Atom, double dt)
 	Atom.v +=Atom.f*0.5*dt/Atom.m;
 
 	Atom.pos += Atom.v*dt +Atom.f*0.5 * dt * dt / Atom.m;
-
   
 }
 

@@ -31,7 +31,7 @@ struct TwoDvec
 	}
 
 	// Overload -= operator
-	TwoDvec<T> operator+=(const TwoDvec<T> rhs) {
+	TwoDvec<T> operator-=(const TwoDvec<T> rhs) {
 		return TwoDvec<T>(x -= rhs.x, y -= rhs.y);
 	}
 
@@ -57,7 +57,7 @@ struct TwoDvec
 	// Overload / for division of vector by a scalar
 	TwoDvec<int> ceil(const double number)
 	{
-		return TwoDvec<int>(std::ceil(x / rhs), std::ceil(y / rhs));
+		return TwoDvec<int>(std::ceil(x / number), std::ceil(y / number));
 	}
 
 };
@@ -72,9 +72,9 @@ typedef struct atom
 	TwoDvec<int> binIJ; // (i,j) pairs of the bin containing the particle
 };
 
-void InitAtomsPos(std::vector<atom> &Atoms, double L_Box);
-void InitAtomsVel(std::vector<atom> &Atoms, double T);
+//void InitAtomsPos(std::vector<atom> &Atoms, double L_Box);
+void InitAtomsVel(std::vector<atom> &Atoms, double T,int Na);
 double setBoxSize(const double density, const int N);
 void BinParticles(atom& particle, double BinSize);
 void VelVerlt(atom &particle,double dt);
-void ApplyForce(atom& Atoms_i, atom& Atoms_j);
+void ApplyForce(atom& Atoms_i, atom Atoms_j, double sig, double eps);
