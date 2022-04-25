@@ -71,6 +71,12 @@ public:
 		return TwoDvec<T>(x * rhs, y * rhs);
 	}
 
+	//  Dot product method for vector-vector dot product
+	T DotProd(const TwoDvec<T> vec2)
+	{
+		return (x * vec2.x+ y * vec2.y);
+	}
+
 	// Overload / for division of vector by a scalar
 	TwoDvec<T> operator/(const T rhs)
 	{
@@ -95,7 +101,7 @@ typedef struct atom
 	TwoDvec<int> binIJ; // (i,j) pairs of the bin containing the particle
 };
 
-void InitAtomsPos(std::vector<atom> &Atoms, double L_Box, int Na);
+//void InitAtomsPos(std::vector<atom> &Atoms, double L_Box);
 void InitAtomsVel(std::vector<atom> &Atoms, double T,int Na);
 double setBoxSize(const double density, const int N);
 void BinParticles(atom& particle, double BinSize);
@@ -103,4 +109,5 @@ void VelVerlt(atom &particle,double dt);
 void ApplyForce(atom& Atoms_i, atom Atoms_j, double sig, double eps);
 
 // functions for property calculations
-double CalcInstanKE(std::vector<atom> Atoms)
+double CalcInstanKE(std::vector<atom> Atoms);
+double CalcInstanPE(std::vector<atom> Atoms);

@@ -124,4 +124,14 @@ double CalcInstanKE(std::vector<atom> Atoms)
 }
 
 
+// Calculate PE
+double CalcInstanPE(std::vector<atom> Atoms)
+{
+	double PE = 0;
+	for (int i = 0; i < Atoms.size(); i++)
+	{
+		PE += -Atoms[i].f.DotProd(Atoms[i].pos);
+	}
+}
+
 
