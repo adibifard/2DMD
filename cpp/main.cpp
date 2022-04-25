@@ -41,6 +41,7 @@ int main()
 
 	// Initialize Atoms' velocities
 	double T = 300; // Kelvin
+	InitAtomsPos(Atoms, LBox, Na);
 	InitAtomsVel(Atoms,T,Na);
 
 	// loop over the number of time steps

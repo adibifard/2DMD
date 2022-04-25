@@ -7,33 +7,33 @@ using std::pow;
 
 
 // A function to initialize the atoms' positions
-void InitAtomsPos(std::vector<atom> &Atoms, double LBox, int Na)
+void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na)
 {
 	// Uniform distribution of the atoms
 //	for (size_t i=0;i<Atoms.size();i++)
 //	{
 //		
 //	}
-     int n, p, i, j;
-     double a;
-//
-//   // Number of atoms in each direction
-    n = int(ceil(pow(Atoms.size(), 1.0/3)));
-//
-//   //  spacing between atoms along a given direction
-    a = LBox / n;
-//   
-//   //  index for number of particles assigned positions
-    p = 0;
-//   //  initialize positions
-   for (i=0; i<n; i++) {
-     for (j=0; j<n; j++) {
-         if (p<Na) {
-           Atoms[p].pos= {(i + 0.5)*a,(j + 0.5)*a};
-         }
-         p++;
-       }
-     }   
+	int n, p, i, j;
+	double a;
+	//
+	//   // Number of atoms in each direction
+	n = int(ceil(pow(Atoms.size(), 1.0 / 3)));
+	//
+	//   //  spacing between atoms along a given direction
+	a = LBox / n;
+	//   
+	//   //  index for number of particles assigned positions
+	p = 0;
+	//   //  initialize positions
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++) {
+			if (p < Na) {
+				Atoms[p].pos = { (i + 0.5) * a,(j + 0.5) * a };
+			}
+			p++;
+		}
+	}
 }
 
 // A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
@@ -96,17 +96,16 @@ void VelVerlt(atom &Atom, double dt)
 {
 	//  Compute accelerations from forces at current position
 
-	// need to call Applyforce function
-	Atom.v +=Atom.f*0.5*dt/Atom.m;
+	// Euler's algorithm
+	Atom.v = Atom.pos + Atom.v * dt + Atom.f * (pow(dt, 2) / (2 * Atom.m));
 
-	Atom.pos += Atom.v*dt +Atom.f*0.5 * dt * dt / Atom.m;
+	Atom.pos = Atom.v + Atom.f * (dt / Atom.m);
   
 }
 
 
 
 // The thermostat function
-
 
 
 
@@ -132,6 +131,8 @@ double CalcInstanPE(std::vector<atom> Atoms)
 	{
 		PE += -Atoms[i].f.DotProd(Atoms[i].pos);
 	}
+	return  PE;
 }
+
 
 

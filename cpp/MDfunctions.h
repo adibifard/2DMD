@@ -101,7 +101,7 @@ typedef struct atom
 	TwoDvec<int> binIJ; // (i,j) pairs of the bin containing the particle
 };
 
-//void InitAtomsPos(std::vector<atom> &Atoms, double L_Box);
+void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na);
 void InitAtomsVel(std::vector<atom> &Atoms, double T,int Na);
 double setBoxSize(const double density, const int N);
 void BinParticles(atom& particle, double BinSize);
