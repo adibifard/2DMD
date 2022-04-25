@@ -97,9 +97,9 @@ void VelVerlt(atom &Atom, double dt)
 	//  Compute accelerations from forces at current position
 
 	// Euler's algorithm
-	Atom.v = Atom.pos + Atom.v * dt + Atom.f * (pow(dt, 2) / (2 * Atom.m));
+	Atom.pos = Atom.pos + Atom.v * dt + Atom.f * (pow(dt, 2) / (2 * Atom.m));
 
-	Atom.pos = Atom.v + Atom.f * (dt / Atom.m);
+	Atom.v = Atom.v + Atom.f * (dt / Atom.m);
   
 }
 
