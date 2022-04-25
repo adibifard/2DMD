@@ -83,21 +83,20 @@ void ApplyForce(atom& Atoms_i, atom Atoms_j, double sig, double eps)
 
 }
 
+
 // This function is applied over each particle separately, after force calculations.
 // Basically, this function updates the current position and velocity of the particle using the calculated force per particle. 
-void VelVerlt(atom &Atom) 
+void VelVerlt(atom &Atom, double dt) 
 {
- //  Compute accelerations from forces at current position
+	//  Compute accelerations from forces at current position
 
-     // need to call Applyforce function
-      
-      Atom.v += 0.5*Atom.f()*dt/Atom.m;
-      Atom.pos() += Atom.v()*dt + 0.5*Atom.f()*dt*dt/Atom.m;
+	// need to call Applyforce function
+	Atom.v +=Atom.f*0.5*dt/Atom.m;
 
-   
+	Atom.pos() += Atom.v()*dt + 0.5*Atom.f()*dt*dt/Atom.m;
+
   
 }
-
 
 
 

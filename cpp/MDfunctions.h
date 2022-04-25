@@ -20,10 +20,21 @@ struct TwoDvec
 		return TwoDvec<T>(x + rhs.x, y + rhs.y);
 	}
 
+	// Overload += operator
+	TwoDvec<T> operator+=(const TwoDvec<T> rhs) {
+		return TwoDvec<T>(x += rhs.x, y += rhs.y);
+	}
+
 	// Overload - operator
 	TwoDvec<T> operator-(const TwoDvec<T> rhs) {
 		return TwoDvec<T>(x - rhs.x, y - rhs.y);
 	}
+
+	// Overload -= operator
+	TwoDvec<T> operator+=(const TwoDvec<T> rhs) {
+		return TwoDvec<T>(x -= rhs.x, y -= rhs.y);
+	}
+
 
 	// Overload the == operator
 	bool operator==(const TwoDvec<T> rhs) const {
