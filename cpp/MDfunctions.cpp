@@ -93,7 +93,7 @@ void VelVerlt(atom &Atom, double dt)
 	// need to call Applyforce function
 	Atom.v +=Atom.f*0.5*dt/Atom.m;
 
-	Atom.pos() += Atom.v()*dt + 0.5*Atom.f()*dt*dt/Atom.m;
+	Atom.pos += Atom.v*dt +Atom.f*0.5 * dt * dt / Atom.m;
 
   
 }

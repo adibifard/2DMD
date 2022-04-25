@@ -64,7 +64,7 @@ int main()
 		// Move the particles using velocity-Verlet algorithm (By Anishumitra)
 		for (size_t i = 0; i < Na; i++)
 		{
-			VelVerlt(Atoms[i]); // Please complete the vel-verlet function
+			VelVerlt(Atoms[i],dt); // Please complete the vel-verlet function
 		}
 
 		// Determine the instantaneous pressure and temperature of the system (By Meisam and Anishumitra)
