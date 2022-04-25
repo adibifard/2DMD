@@ -28,7 +28,7 @@ void InitAtomsPos(std::vector<atom> &Atoms, double LBox, int Na)
 //   //  initialize positions
    for (i=0; i<n; i++) {
      for (j=0; j<n; j++) {
-         if (Na) {
+         if (p<Na) {
            Atoms[p].pos= {(i + 0.5)*a,(j + 0.5)*a};
          }
          p++;
