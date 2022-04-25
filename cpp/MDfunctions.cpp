@@ -90,9 +90,10 @@ void VelVerlt(atom &Atom)
  //  Compute accelerations from forces at current position
 
      // need to call Applyforce function
+      
+      Atom.v += 0.5*Atom.f()*dt/Atom.m;
       Atom.pos() += Atom.v()*dt + 0.5*Atom.f()*dt*dt/Atom.m;
 
-      Atom.v += 0.5*Atom.f()*dt/Atom.m;
    
   
 }
