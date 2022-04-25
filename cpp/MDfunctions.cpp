@@ -7,35 +7,34 @@ using std::pow;
 
 
 // A function to initialize the atoms' positions
-//void InitAtomsPos(std::vector<atom> &Atoms, double LBox)
-//{
-//	// Uniform distribution of the atoms
+void InitAtomsPos(std::vector<atom> &Atoms, double LBox, int Na)
+{
+	// Uniform distribution of the atoms
 //	for (size_t i=0;i<Atoms.size();i++)
 //	{
 //		
 //	}
-//   int n, p, i, j;
-//   double a;
+     int n, p, i, j;
+     double a;
 //
 //   // Number of atoms in each direction
-//   n = int(ceil(pow(Atoms.size(), 1.0/2)));
+    n = int(ceil(pow(Atoms.size(), 1.0/3)));
 //
 //   //  spacing between atoms along a given direction
-//   a = LBox / n;
+    a = LBox / n;
 //   
 //   //  index for number of particles assigned positions
-//   p = 0;
+    p = 0;
 //   //  initialize positions
-//   for (i=0; i<n; i++) {
-//     for (j=0; j<n; j++) {
-//         if (p<Atoms.size()) {
-//           Atoms[p].pos()= [(i + 0.5)*a,(j + 0.5)*a];
-//         }
-//         p++;
-//       }
-//     }
-//   
-//}
+   for (i=0; i<n; i++) {
+     for (j=0; j<n; j++) {
+         if (Na) {
+           Atoms[p].pos= {(i + 0.5)*a,(j + 0.5)*a};
+         }
+         p++;
+       }
+     }   
+}
 
 // A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
 void InitAtomsVel(std::vector<atom> &Atoms, double T, int Na)
