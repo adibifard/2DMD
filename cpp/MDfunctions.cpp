@@ -42,14 +42,16 @@ void InitAtomsVel(std::vector<atom> &Atoms, double T, int Na)
 {
 	std::random_device myseed;
 	std::mt19937 Myengine(myseed());
+	std::vector<double> velMag;
 	for (size_t i = 0; i < Na; i++)
 	{
 		double SIG = std::sqrt(kB * T / Atoms[i].m);
 		double Mean = 0;
 		std::normal_distribution<double> NormalDist(Mean, SIG);
 
-		Atoms[i].v = {NormalDist(Myengine),NormalDist(Myengine) };
+		Atoms[i].v = {NormalDist(Myengine),NormalDist(Myengine)};
 
+		//velMag.push_back( std::sqrt(pow(Atoms[i].v[0],2)+ pow(Atoms[i].v[1],2)));
 	}
 	
 }
@@ -107,6 +109,20 @@ void VelVerlt(atom &Atom, double dt)
 // The thermostat function
 
 
+
+
+// Calculate KE
+double CalcInstanKE(std::vector<atom> Atoms)
+{
+	double KE = 0;
+	for (int i = 0; i < Atoms.size(); i++) 
+	{
+		double V = Atoms[i].v.norm();
+		KE += 0.5 * Atoms[i].m * pow(V, 2);
+	}
+	return KE;
+
+}
 
 
 

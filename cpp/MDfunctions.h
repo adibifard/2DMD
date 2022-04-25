@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <cmath>
-
+#include <iostream>
 
 // Define atomic constants
 #define kB 1.380649e-23 // J/k
@@ -10,14 +10,37 @@
 template<typename T>
 struct TwoDvec
 {
+private:
 	T x, y;
-	T norm() { return std::sqrt(x * x + y * y); };
+	int size = 2;
+
+public:
+	
 	// initializer
 	TwoDvec(T x = 0, T y = 0) :x(x), y(y) {}
+
+	// The norm method
+	T norm() { return std::sqrt(x * x + y * y); };
 
 	// Overload + operator
 	TwoDvec<T> operator+(const TwoDvec<T> rhs) {
 		return TwoDvec<T>(x + rhs.x, y + rhs.y);
+	}
+
+	// Overload [] operator
+	T& operator[](const int index) 
+	{
+		if (index >= size) {
+			std::cout << "Array index out of bound, exiting";
+			exit(0);
+		}
+		if (index == 0) {
+			return x;
+		} else if (index == 1) {
+			return y;
+		}
+			
+
 	}
 
 	// Overload += operator
@@ -78,3 +101,6 @@ double setBoxSize(const double density, const int N);
 void BinParticles(atom& particle, double BinSize);
 void VelVerlt(atom &particle,double dt);
 void ApplyForce(atom& Atoms_i, atom Atoms_j, double sig, double eps);
+
+// functions for property calculations
+double CalcInstanKE(std::vector<atom> Atoms)

@@ -10,8 +10,6 @@
 // Simulation of an NVT ensemble with Periodic Boundary Conditions
 int main()
 {
-
-	
 	// Setup simulation time settings
 	double dt = 2; // in fs
 	double tf =20000 ;// in fs
@@ -62,7 +60,7 @@ int main()
 			Atoms[i].f = { 0,0 };
 			for (size_t j = 0; j < Na; j++) // this is an O(n^2) implementation that we will need to change it after implementing the Binning function into the code
 			{
-				ApplyForce(Atoms[i], Atoms[j],eps,sigma); // Almost completed
+				ApplyForce(Atoms[i], Atoms[j],eps,sigma); //  completed
 			}
 		}
 
@@ -74,8 +72,8 @@ int main()
 		}
 
 		// Determine the instantaneous pressure and temperature of the system (By Meisam and Anishumitra)
-
-
+		double KineticEnergy = CalcInstanKE(Atoms);
+		double Tinst = KineticEnergy / (Na * kB);
 	}
 
 	return 0;
