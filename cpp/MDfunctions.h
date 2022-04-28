@@ -64,6 +64,18 @@ public:
 		return x == rhs.x
 			&& (y == rhs.y);
 	}
+	
+	// Overload the < operator
+	bool operator<(const TwoDvec<T> rhs) const {
+		return x < rhs.x
+			&& (y < rhs.y);
+	}
+
+	// Overload the > operator
+	bool operator>(const TwoDvec<T> rhs) const {
+		return x > rhs.x
+			&& (y > rhs.y);
+	}
 
 	// Overload * for multiplication of vector with a scalar
 	TwoDvec<T> operator*(const T rhs)
