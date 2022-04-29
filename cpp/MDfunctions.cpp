@@ -1,5 +1,7 @@
 #include "MDfunctions.h"
 #include <random>
+#include <math.h>
+#include <stdlib.h>
 
 using std::pow;
 // This is the cpp file used to code the essential functions needed for our 2DMD simulator
@@ -9,37 +11,35 @@ using std::pow;
 // A function to initialize the atoms' positions
 void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na)
 {
-	// Uniform distribution of the atoms
+// Uniform distribution of the atoms
 //	for (size_t i=0;i<Atoms.size();i++)
 //	{
-//		
-//	}
-	int n, p, i, j;
-	double a;
-	//
-	//   // Number of atoms in each direction
-	n = int(ceil(pow(Atoms.size(), 1.0 / 3)));
-	//
-	//   //  spacing between atoms along a given direction
-	a = LBox / n;
-	//   
-	//   //  index for number of particles assigned positions
-	p = 0;
-	//   //  initialize positions
-	for (i=0; i<n; i++) {
-     for (j=0; j<n; j++) {
-		 if (p < Na) {
-			 Atoms[p].pos = { (i)*a,(j)*a }; //atom at the origin
-				 p = p + 1;
-			 Atoms[p].pos = { (i)*a,(j + 0.5) * a }; //atom at one edge
-				 p = p + 1;
-			 Atoms[p].pos = { (i + 0.5) * a,(j)*a }; //atom at the other edge
-				 p = p + 1;
-			 Atoms[p].pos = { (i + 0.5) * a,(j + 0.5) * a }; //atom diagonal from the origin
-				 p = p + 1;
-		 }
-       }
-     }
+//
+
+	int sx = (int)ceil(sqrt((double)Na));
+	int sy = (Na + sx - 1) / sx;
+
+	int* shuffle = (int*)malloc(Na * sizeof(int));
+	for (int i = 0; i < Na; i++)
+		shuffle[i] = i;
+
+	for (int i = 0; i < Na; i++)
+	{
+		//
+		//  particles are not spatially sorted
+		//
+		long int lrand48(void);
+		int j = lrand48()%(Na - i);
+		int k = shuffle[j];
+		shuffle[j] = shuffle[Na - i - 1];
+
+		//
+		//  particles distributed uniformly
+		//
+		Atoms[i].pos = {LBox * (1. + (k % sx)) / (1 + sx), LBox * (1. + (k / sx)) / (1 + sy)};
+
+	}
+	free(shuffle);
 }
 
 // A function to initialize the atoms' velocities using Maxwell-Boltzmann distribution at the set-point temperature
@@ -108,12 +108,12 @@ void VelVerlt(atom &Atom, double dt)
 	Atom.v = Atom.v + Atom.f * (dt / Atom.m);
 	//periodic boundary condition
 	Atom.pos += Atom.v*dt +Atom.f*0.5 * dt * dt / Atom.m;
-	if (Atom.pos < 0) {
-			Atom.pos = Atom.pos+LBox;
-         }
-	if (Atom.pos > LBox) {
-		Atom.pos = Atom.pos-LBox;
-		}
+	//if (Atom.pos < 0) {
+	//		Atom.pos = Atom.pos+LBox;
+         //}
+	//if (Atom.pos > LBox) {
+	//	Atom.pos = Atom.pos-LBox;
+	//	}
   
 }
 
