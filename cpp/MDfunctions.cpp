@@ -53,15 +53,31 @@ void InitAtomsVel(std::vector<atom> &Atoms, double T, int Na)
 	std::mt19937 Myengine(myseed());
 	std::vector<double> velMag;
 	double kBmod = (kB * kg2gr * pow(m2A, 2)) / pow(s2fs, 2);
+	
+	double vsum_x=0.0;
+	double vsum_y=0.0;
 	for (size_t i = 0; i < Na; i++)
 	{
-		double SIG = std::sqrt(kB_ru * T / (Atoms[i].m/ Navg));
+		double SIG = std::sqrt(kB * T / Atoms[i].m);
 		double Mean = 0;
 		std::normal_distribution<double> NormalDist(Mean, SIG);
 
 		Atoms[i].v = {NormalDist(Myengine),NormalDist(Myengine)};
-
+        vsum_x = vsum_x + Atoms[i].v[0];
+		vsum_y = vsum_y + Atoms[i].v[1];
 		//velMag.push_back( std::sqrt(pow(Atoms[i].v[0],2)+ pow(Atoms[i].v[1],2)));
+	}
+	for (size_t i = 0; i < Na; i++)
+	{
+	    Atoms[i].v[0]= Atoms[i].v[0]-vsum_x/Na;
+	    Atoms[i].v[1]= Atoms[i].v[1]-vsum_x/Na;
+	}
+	vsum_x=0.0;
+	vsum_y=0.0;
+	for (size_t i = 0; i < Na; i++)
+	{
+	    vsum_x = vsum_x + Atoms[i].v[0] ;
+	    vsum_y = vsum_y + Atoms[i].v[1] ;
 	}
 	
 }
