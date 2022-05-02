@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <iomanip>      
 
 // Define atomic constants
 #define kB 1.380649e-23 // J/k
@@ -126,11 +127,13 @@ public:
 
 void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na);
 void InitAtomsVel(std::vector<atom> &Atoms, double T,int Na);
+double SumMomentum(std::vector<atom> Atoms);
+
 double setBoxSize(const double density, const int N);
 void BinParticles(std::vector<atom>& Atoms, const double BinSize, std::vector<std::vector<std::vector<int>>>& Bin);
 // Integration Algorithms
 void Euler(atom &particle,double dt);
-void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig);
+void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize);
 
 // Force calculations
 void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin);
@@ -141,3 +144,6 @@ double CalcInstanPE(std::vector<atom> Atoms);
 
 // In-Out Functions
 void WriteToExcel(std::string filename, std::vector<atom>  data, std::string colName,int Dtype);
+void AtomsToGRO(std::string filename, std::vector<std::vector<atom>> AlltimeAtoms, std::string BoxDimAngle);
+
+int GetNumDigits(int N);
