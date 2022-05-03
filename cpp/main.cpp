@@ -1,7 +1,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
-#include "MDfunctions.h"
+#include "Mdfun.h"
 
 #define cutoff 10
 #define ns2fs 1e+6
@@ -12,8 +12,8 @@ int main()
 {
 	// Setup simulation time settings
 	double dt = 2; // in fs
-	double tf =50 ;// in ns
-	size_t NTsteps = std::round(tf* ns2fs /dt);
+	double tf = 10000 ;// in fs
+	size_t NTsteps = tf;
 	std::cout << "NTimeSteps: " << NTsteps << "\n";
 
 	// Set forcefield (LJ) parameters (Argon-> from ATB molecular structures)
@@ -22,7 +22,7 @@ int main()
 	double mass = 39.948000000;				// gr/mole
 
 	// Set the number of atoms in the box
-	size_t Na = 100; // the number of atoms
+	size_t Na = 1000; // the number of atoms
 	double density = 0.0026; //  #atoms/area ro(Ar)=1.784 gr/cm3 -> 1.784 gr/cm2
 	// Allocate memory for atoms
 	std::vector<atom> Atoms(Na);
@@ -114,8 +114,8 @@ int main()
 		double KE_KcalPerMole = KineticEnergy * 1e7/KcaltoJoule; // Kcal/mole
 		double PEnergy = CalcInstanPE(Atoms);
 		double TotalEn = KineticEnergy + PEnergy;
-		std::cout << "Time (fs): " << (i + 1) * dt << "\n";
-		std::cout  << "KE: " << KE_KcalPerMole << "\n";
+		printf("Time (fs):%lf \n " ,(i + 1) * dt);
+		printf("KE:%lf \n ",KE_KcalPerMole);
 		
 		//std::cout << "Total Energy (Kcal/mole): " << TotalEn << "\n";
 		//std::cout << "Time (fs): "<<(i+1)*dt<<"-PE (Kcal/mole): " << PEnergy <<"-KE (Kcal/mole): "<< KE_KcalPerMole<< "\n";
@@ -136,4 +136,3 @@ int main()
 
 	return 0;
 }
-
