@@ -2,12 +2,29 @@
 #include <random>
 #include <span>
 #include <fstream>
+#include <sstream>
+#include <string>
 
+#include "mpi.h"
 
 using std::pow;
 double LBox;
 // This is the cpp file used to code the essential functions needed for our 2DMD simulator
 
+
+// read the command line inputs
+int  read_cmd(int argc, char** argv, char* option, int value_default)
+{
+	for (int i = 0; i < argc; i++) 
+	{
+		if (strcmp(argv[i],option) == 0)
+		{
+			return std::stoi(argv[i + 1]);
+		}
+	}
+	
+	return value_default;
+}
 
 
 // A function to initialize the atoms' positions
@@ -26,30 +43,6 @@ void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na)
 	//
 	int Nxy = ceil(sqrt(Na));
 	double dxy = LBox / Nxy;
-
-	//   // Number of atoms in each direction
-	//n = int(ceil(pow(Atoms.size(), 1.0 / 3)));
-	////
-	////   //  spacing between atoms along a given direction
-	//a = LBox / n;
-	////   
-	////   //  index for number of particles assigned positions
-	//p = 0;
-	////   //  initialize positions
-	//for (i = 0; i < n; i++) {
-	//	for (j = 0; j < n; j++) {
-	//		if (p < Na) {
-	//			Atoms[p].pos = { (i)*a,(j)*a }; //atom at the origin
-	//				p = p + 1;
-	//			Atoms[p].pos = { (i)*a,(j + 0.5) * a }; //atom at one edge
-	//				p = p + 1;
-	//			Atoms[p].pos = { (i + 0.5) * a,(j)*a }; //atom at the other edge
-	//				p = p + 1;
-	//			Atoms[p].pos = { (i + 0.5) * a,(j + 0.5) * a }; //atom diagonal from the origin
-	//				p = p + 1;
-	//		}
-	//	}
-	//}
 
 	int p = 0;
 	for (int i = 0; i < Nxy; i++) {
@@ -153,6 +146,16 @@ void PBC_images::ReturnImageBoxes (std::vector<atom> Atoms)
 // This function determines the neighboring list per atom
 void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin)
 {
+	
+	//for (int i=0;i<Atoms.size();i++)
+	//{
+	//	for (int j=0;j<Atoms.size();j++)
+	//	{
+	//		if (Atoms[i].binIJ)
+	//	}
+	//
+	//}
+
 	// iterate over the bins
 	for (int i=0;i<Bin.size();i++)
 	{
@@ -272,6 +275,11 @@ void Euler(atom &Atom, double dt)
 // Velocity Verlet
 void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize)
 {
+	MPI_Init(NULL, NULL);
+	int Nproc, rank;
+	MPI_Comm_size(MPI_COMM_WORLD, &Nproc);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	//  Compute accelerations from forces at current position
 	double KcaltoJoule = 4186.8;
 	double Jtorealunits = 1e-7;
@@ -332,15 +340,13 @@ void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std:
 
 
 // Calculate KE
-double CalcInstanKE(std::vector<atom> Atoms)
+void CalcInstanKE(std::vector<atom> Atoms,double & KE)
 {
-	double KE = 0;
 	for (int i = 0; i < Atoms.size(); i++) 
 	{
 		double V = Atoms[i].v.norm();
 		KE += 0.5 * Atoms[i].m * pow(V, 2);
 	}
-	return KE;
 
 }
 

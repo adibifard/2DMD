@@ -125,6 +125,10 @@ public:
 
 };
 
+// read the command line inputs
+int  read_cmd(int argc, char** argv, char* option, int value_default);
+
+// Initialize the position and velocity, and checksum the total momentum
 void InitAtomsPos(std::vector<atom>& Atoms, double LBox, int Na);
 void InitAtomsVel(std::vector<atom> &Atoms, double T,int Na);
 double SumMomentum(std::vector<atom> Atoms);
@@ -134,12 +138,13 @@ void BinParticles(std::vector<atom>& Atoms, const double BinSize, std::vector<st
 // Integration Algorithms
 void Euler(atom &particle,double dt);
 void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize);
+void PBC(double& x);
 
 // Force calculations
 void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin);
 void ApplyForce(std::vector<atom>& Atoms, double eps, double sig);
 // functions for property calculations
-double CalcInstanKE(std::vector<atom> Atoms);
+void CalcInstanKE(std::vector<atom> Atoms, double& KE);
 double CalcInstanPE(std::vector<atom> Atoms);
 
 // In-Out Functions
