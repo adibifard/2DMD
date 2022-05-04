@@ -141,7 +141,7 @@ void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std:
 void PBC(double& x);
 
 // Force calculations
-void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin);
+void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex);
 void ApplyForce(std::vector<atom>& Atoms, double eps, double sig);
 // functions for property calculations
 void CalcInstanKE(std::vector<atom> Atoms, double& KE);

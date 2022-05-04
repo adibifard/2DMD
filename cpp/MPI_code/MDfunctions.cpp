@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm> 
+
 
 #include "mpi.h"
 
@@ -144,17 +146,8 @@ void PBC_images::ReturnImageBoxes (std::vector<atom> Atoms)
 }
 
 // This function determines the neighboring list per atom
-void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin)
+void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex)
 {
-	
-	//for (int i=0;i<Atoms.size();i++)
-	//{
-	//	for (int j=0;j<Atoms.size();j++)
-	//	{
-	//		if (Atoms[i].binIJ)
-	//	}
-	//
-	//}
 
 	// iterate over the bins
 	for (int i=0;i<Bin.size();i++)
@@ -163,20 +156,26 @@ void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<i
 		{
 			for (int k = 0; k < Bin[i][j].size(); k++) 
 			{
-				int atomID = Bin[i][j][k];
-				Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i][j].begin(), Bin[i][j].end()); // (i,j)
+				int GlobatomID = Bin[i][j][k];
+				std::vector<int>::iterator itr = std::find(GlobalToLocalIndex.begin(), GlobalToLocalIndex.end(), GlobatomID);
 
-				if (i > 0) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i-1][j].begin(), Bin[i-1][j].end()); // (i-1, j)
-				if (i< Bin.size()-1) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i+1][j].begin(), Bin[i+1][j].end()); // (i+1, j)
+				// Check if global atom Id is in this partition
+				if (itr!= GlobalToLocalIndex.end())
+				{
+					int localAtomID = std::distance(GlobalToLocalIndex.begin(), itr);
+					Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i][j].begin(), Bin[i][j].end()); // (i,j)
+					if (i > 0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i - 1][j].begin(), Bin[i - 1][j].end()); // (i-1, j)
+					if (i < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i + 1][j].begin(), Bin[i + 1][j].end()); // (i+1, j)
 
-				if (j>0) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i][j-1].begin(), Bin[i ][j-1].end()); // (i, j-1)
-				if (j< Bin.size() - 1) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i ][j+1].begin(), Bin[i ][j+1].end()); // (i, j+1)
+					if (j > 0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i][j - 1].begin(), Bin[i][j - 1].end()); // (i, j-1)
+					if (j < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i][j + 1].begin(), Bin[i][j + 1].end()); // (i, j+1)
 
-				if (i < Bin.size() - 1 && j < Bin.size() - 1 ) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i+1][j + 1].begin(), Bin[i+1][j + 1].end());// (i+1, j+1)
-				if (i > 0 && j>0) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i - 1][j-1].begin(), Bin[i - 1][j-1].end());// (i-1, j-1)
+					if (i < Bin.size() - 1 && j < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i + 1][j + 1].begin(), Bin[i + 1][j + 1].end());// (i+1, j+1)
+					if (i > 0 && j > 0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i - 1][j - 1].begin(), Bin[i - 1][j - 1].end());// (i-1, j-1)
 
-				if (i < Bin.size() - 1 && j >0) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i + 1][j - 1].begin(), Bin[i + 1][j - 1].end());// (i+1, j-1)
-				if (i>0 && j < Bin.size() - 1) Atoms[atomID].NeighbIndex.insert(Atoms[atomID].NeighbIndex.end(), Bin[i - 1][j + 1].begin(), Bin[i - 1][j + 1].end());// (i-1, j+1)
+					if (i < Bin.size() - 1 && j >0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i + 1][j - 1].begin(), Bin[i + 1][j - 1].end());// (i+1, j-1)
+					if (i > 0 && j < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i - 1][j + 1].begin(), Bin[i - 1][j + 1].end());// (i-1, j+1)
+				}
 			}
 		}
 	}
@@ -273,66 +272,66 @@ void Euler(atom &Atom, double dt)
 }
 
 // Velocity Verlet
-void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize)
-{
-	MPI_Init(NULL, NULL);
-	int Nproc, rank;
-	MPI_Comm_size(MPI_COMM_WORLD, &Nproc);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-	//  Compute accelerations from forces at current position
-	double KcaltoJoule = 4186.8;
-	double Jtorealunits = 1e-7;
-	double unitConv = KcaltoJoule * Jtorealunits;
-
-	for (atom &atom1 : Atoms) 
-	{
-		// compute a(t)
-		atom1.a0 = (atom1.f / atom1.m) * unitConv;
-		// compute x(t+dt)
-		atom1.pos = atom1.pos + atom1.v * dt + atom1.a0 * pow(dt, 2)*0.5;
-		// Apply Periodic Boundary Condition over the position of the particles leaving the box boundaries
-		//BBC(atom1);
-		PBC(atom1.pos[0]);
-		PBC(atom1.pos[1]);
-	}
-
-	// Remove the current bins
-	for (int i = 0; i < Bin.size(); i++)
-	{
-		for (int j = 0; j < Bin[0].size(); j++)
-		{
-			Bin[i][j].clear();
-		}
-	}
-
-	// Update bins
-	BinParticles(Atoms, binSize, Bin);
-	Neighboring(Atoms, Bin);
-
-	// Update force at t+dt
-	ApplyForce(Atoms, eps, sig);
-
-	for (atom &atom1 : Atoms)
-	{
-		// compute a(t+dt)
-		atom1.a1 = (atom1.f / atom1.m) * unitConv;
-		// compute v(t+dt)
-		atom1.v = atom1.v + (atom1.a0 + atom1.a1) * dt * 0.5;
-		
-	}
-
-	// Remove the current bins
-	for (int i = 0; i < Bin.size(); i++)
-	{
-		for (int j = 0; j < Bin[0].size(); j++)
-		{
-			Bin[i][j].clear();
-		}
-	}
-
-
-}
+//void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize)
+//{
+//	MPI_Init(NULL, NULL);
+//	int Nproc, rank;
+//	MPI_Comm_size(MPI_COMM_WORLD, &Nproc);
+//	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+//
+//	//  Compute accelerations from forces at current position
+//	double KcaltoJoule = 4186.8;
+//	double Jtorealunits = 1e-7;
+//	double unitConv = KcaltoJoule * Jtorealunits;
+//
+//	for (atom &atom1 : Atoms) 
+//	{
+//		// compute a(t)
+//		atom1.a0 = (atom1.f / atom1.m) * unitConv;
+//		// compute x(t+dt)
+//		atom1.pos = atom1.pos + atom1.v * dt + atom1.a0 * pow(dt, 2)*0.5;
+//		// Apply Periodic Boundary Condition over the position of the particles leaving the box boundaries
+//		//BBC(atom1);
+//		PBC(atom1.pos[0]);
+//		PBC(atom1.pos[1]);
+//	}
+//
+//	// Remove the current bins
+//	for (int i = 0; i < Bin.size(); i++)
+//	{
+//		for (int j = 0; j < Bin[0].size(); j++)
+//		{
+//			Bin[i][j].clear();
+//		}
+//	}
+//
+//	// Update bins
+//	BinParticles(Atoms, binSize, Bin);
+//	Neighboring(Atoms, Bin);
+//
+//	// Update force at t+dt
+//	ApplyForce(Atoms, eps, sig);
+//
+//	for (atom &atom1 : Atoms)
+//	{
+//		// compute a(t+dt)
+//		atom1.a1 = (atom1.f / atom1.m) * unitConv;
+//		// compute v(t+dt)
+//		atom1.v = atom1.v + (atom1.a0 + atom1.a1) * dt * 0.5;
+//		
+//	}
+//
+//	// Remove the current bins
+//	for (int i = 0; i < Bin.size(); i++)
+//	{
+//		for (int j = 0; j < Bin[0].size(); j++)
+//		{
+//			Bin[i][j].clear();
+//		}
+//	}
+//
+//
+//}
 
 
 

@@ -85,12 +85,7 @@ int main(int argc, char** argv)
 	std::string BoxDimAngle = BoxLenghSTR + "   " + BoxLenghSTR + "   " + BoxLenghSTR+ "   " + "0   0   0   0   0   0";
 
 
-	// Divide particles into bins (By Meisam)
-	BinParticles(Atoms, binSize, Bin);
-	// Find the neighboring list
-	Neighboring(Atoms, Bin);
-	// Apply pair-wise forces (By Meisam)
-	ApplyForce(Atoms, eps, sigma);
+	
 
 	////////////////////////////////// Initialize MPI ////////////////////////////////////////////////////////////////
 	int Nproc, rank;
@@ -183,12 +178,6 @@ int main(int argc, char** argv)
 	
 	std::cout << "Rank: " << rank << "\n";
 
-	
-
-	// Send partitions to processes
-	
-
-
 	//MPI_Bcast(&Atoms, Na, MPIAtom, 0, MPI_COMM_WORLD);
 
 	
@@ -202,6 +191,16 @@ int main(int argc, char** argv)
 	// loop over the number of time steps
 	for (size_t i = 0; i <= NTsteps; i++)
 	{
+		if (i==0)
+		{
+			// Divide particles into bins (By Meisam)
+			BinParticles(Partitions[rank], binSize, Bin);
+			// Find the neighboring list
+			Neighboring(Partitions[rank], Bin, GlobalToLocalIndex[rank]);
+			// Apply pair-wise forces (By Meisam)
+			ApplyForce(Partitions[rank], eps, sigma);
+		}
+
 		double KineticEnergy = 0;
 		// Populate the image boxes
 		//IMGBox.ReturnImageBoxes(Atoms);
@@ -255,7 +254,7 @@ int main(int argc, char** argv)
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
 
-		Neighboring(Partitions[rank], Bin);
+		Neighboring(Partitions[rank], Bin, GlobalToLocalIndex[rank]);
 
 		// Update force at t+dt
 		ApplyForce(Partitions[rank], eps, sigma);
