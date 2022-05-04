@@ -232,6 +232,7 @@ int main(int argc, char** argv)
 			PBC(atom1.pos[1]);
 		}
 
+		MPI_Barrier(MPI_COMM_WORLD);
 		// Remove the current bins
 		for (int i = 0; i < Bin.size(); i++)
 		{
@@ -252,7 +253,7 @@ int main(int argc, char** argv)
 				MPI_Wait(&req, &status);
 			}
 		}
-		MPI_Barrier(MPI_COMM_WORLD);
+		
 
 		Neighboring(Partitions[rank], Bin, GlobalToLocalIndex[rank]);
 
@@ -272,6 +273,7 @@ int main(int argc, char** argv)
 		//VelVerlet(Atoms, dt, eps, sigma,Bin, binSize);
 		std::cout << "Nrank= " << Partitions[rank].size() << "\n";
 		Partitions[rank].clear();
+		GlobalToLocalIndex[rank].clear();
 		
 		// Re-partition the atoms
 		if (rank == Proot)
@@ -291,26 +293,15 @@ int main(int argc, char** argv)
 				int DataSize = Partitions[r].size();
 				MPI_Isend(&Partitions[r], DataSize, MPIAtom, r, 0, MPI_COMM_WORLD, &req);
 				MPI_Wait(&req, &status);
-				std::cout << "status: " << &status<<"\n";
+				MPI_Isend(&GlobalToLocalIndex[r], DataSize, MPIAtom, r, 0, MPI_COMM_WORLD, &req);
+				MPI_Wait(&req, &status);
 			}
 		}
-		int a = 1;
-		MPI_Barrier(MPI_COMM_WORLD);
+	
+		
 		std::cout << "Nrank= " << Partitions[rank].size() << "\n";
 
-		if (rank == 0)
-		{
-			int a = 1;
-			// Distribute updated atoms between MPI processes
-			//MPI_Allgatherv(Partitions[rank], Partitions[rank].size(), MPIAtom, Atoms, );
 
-			//// Do the rebinning
-
-
-			//// Send new bins to all processes
-			//MPI_Allgatherv();
-
-		}
 		// Collect all the atomic data from processors (All-to-All)
 		//double Mom = SumMomentum(Atoms)*Na/Navg;
 
@@ -366,6 +357,7 @@ int main(int argc, char** argv)
 		MPI_Reduce(&KineticEnergy, &rKineticEnergy, 1, MPI_DOUBLE, MPI_SUM, Proot, MPI_COMM_WORLD);
 		std::cout << "i: "<<i<<"; KE: " << rKineticEnergy<<"\n";
 
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 
 	MPI_Finalize();
