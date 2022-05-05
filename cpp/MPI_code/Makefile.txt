@@ -1,0 +1,31 @@
+SHELL='bash'
+#
+# Bridges - PSC
+#
+# Intel Compilers are loaded by default
+# You will need to specifically switch to GNU Modules
+# With with `modules.sh`
+#
+
+CC = g++
+MPCC = mpic++
+OPENMP = -fopenmp
+CFLAGS = -O3
+LIBS =
+
+
+TARGETS = main 
+
+all:	$(TARGETS)
+
+main: main.o MDfunctions.o
+	$(CC) -o $@ $(LIBS) main.o MDfunctions.o
+
+main.o: main.cpp MDfunctions.h
+	$(CC) -c $(CFLAGS) main.cpp
+
+MDfunctions.o: MDfunctions.cpp MDfunctions.h
+	$(CC) -c $(CFLAGS) MDfunctions.cpp
+
+clean:
+	rm -f *.o $(TARGETS) *.stdout *.txt
