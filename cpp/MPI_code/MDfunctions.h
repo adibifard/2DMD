@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>      
+#include <cstring>
 
 // Define atomic constants
 #define kB 1.380649e-23 // J/k
@@ -111,7 +112,7 @@ typedef struct atom
 	TwoDvec<double> a1; // 2D accelaration at t+dt
 	TwoDvec<double> f; // 2D force
 	TwoDvec<int> binIJ; // (i,j) pairs of the bin containing the particle
-	std::vector<int> NeighbIndex;
+	//std::vector<int> NeighbIndex;
 };
 
 class PBC_images
@@ -141,8 +142,8 @@ void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std:
 void PBC(double& x);
 
 // Force calculations
-void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex);
-void ApplyForce(std::vector<atom>& Atoms, double eps, double sig);
+void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<int>>& NeighborList_local);
+void ApplyForce(std::vector<atom>& Atoms, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<int>> NeighborList_local, double eps, double sig);
 // functions for property calculations
 void CalcInstanKE(std::vector<atom> Atoms, double& KE);
 double CalcInstanPE(std::vector<atom> Atoms);
@@ -152,3 +153,7 @@ void WriteToExcel(std::string filename, std::vector<atom>  data, std::string col
 void AtomsToGRO(std::string filename, std::vector<std::vector<atom>> AlltimeAtoms, std::string BoxDimAngle);
 
 int GetNumDigits(int N);
+
+// MPI-related functions
+void SpatialDecomp(std::vector<atom> Atoms, int Nproc, double DX, double DY, int Ndx, int Ndy, std::vector <std::vector<int>>& GlobalToLocalIndex,
+	std::vector<std::vector<atom>>& Partitions, std::vector<std::vector<atom>>& GhostPart, std::vector <std::vector<int>>& GlobalToLocalIndexGhost);

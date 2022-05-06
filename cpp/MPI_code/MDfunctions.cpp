@@ -146,7 +146,7 @@ void PBC_images::ReturnImageBoxes (std::vector<atom> Atoms)
 }
 
 // This function determines the neighboring list per atom
-void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex)
+void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<int>>& NeighborList_local)
 {
 
 	// iterate over the bins
@@ -154,28 +154,31 @@ void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<i
 	{
 		for (int j=0;j<Bin[0].size();j++)
 		{
+			// iterate over the atoms in the (i,j) bin
 			for (int k = 0; k < Bin[i][j].size(); k++) 
 			{
 				int GlobatomID = Bin[i][j][k];
-				std::vector<int>::iterator itr = std::find(GlobalToLocalIndex.begin(), GlobalToLocalIndex.end(), GlobatomID);
-
+				// Determine if the atom in the bin exists in the current partition of the data
+				//std::vector<int>::iterator itr = std::find(GlobalToLocalIndex.begin(), GlobalToLocalIndex.end(), GlobatomID);
+				int localAtomID = GlobatomID;
 				// Check if global atom Id is in this partition
-				if (itr!= GlobalToLocalIndex.end())
-				{
-					int localAtomID = std::distance(GlobalToLocalIndex.begin(), itr);
-					Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i][j].begin(), Bin[i][j].end()); // (i,j)
-					if (i > 0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i - 1][j].begin(), Bin[i - 1][j].end()); // (i-1, j)
-					if (i < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i + 1][j].begin(), Bin[i + 1][j].end()); // (i+1, j)
+				/*if (itr!= GlobalToLocalIndex.end())
+				{*/
+					//int localAtomID = std::distance(GlobalToLocalIndex.begin(), itr);// get the local index of the atom in the bin
+					// Add the atoms in the neighboring bins to the neighboring list of the local atom
+					NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i][j].begin(), Bin[i][j].end()); // (i,j)
+					if (i > 0) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i - 1][j].begin(), Bin[i - 1][j].end()); // (i-1, j)
+					if (i < Bin.size() - 1) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i + 1][j].begin(), Bin[i + 1][j].end()); // (i+1, j)
 
-					if (j > 0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i][j - 1].begin(), Bin[i][j - 1].end()); // (i, j-1)
-					if (j < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i][j + 1].begin(), Bin[i][j + 1].end()); // (i, j+1)
+					if (j > 0) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i][j - 1].begin(), Bin[i][j - 1].end()); // (i, j-1)
+					if (j < Bin.size() - 1) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i][j + 1].begin(), Bin[i][j + 1].end()); // (i, j+1)
 
-					if (i < Bin.size() - 1 && j < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i + 1][j + 1].begin(), Bin[i + 1][j + 1].end());// (i+1, j+1)
-					if (i > 0 && j > 0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i - 1][j - 1].begin(), Bin[i - 1][j - 1].end());// (i-1, j-1)
+					if (i < Bin.size() - 1 && j < Bin.size() - 1) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i + 1][j + 1].begin(), Bin[i + 1][j + 1].end());// (i+1, j+1)
+					if (i > 0 && j > 0) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i - 1][j - 1].begin(), Bin[i - 1][j - 1].end());// (i-1, j-1)
 
-					if (i < Bin.size() - 1 && j >0) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i + 1][j - 1].begin(), Bin[i + 1][j - 1].end());// (i+1, j-1)
-					if (i > 0 && j < Bin.size() - 1) Atoms[localAtomID].NeighbIndex.insert(Atoms[localAtomID].NeighbIndex.end(), Bin[i - 1][j + 1].begin(), Bin[i - 1][j + 1].end());// (i-1, j+1)
-				}
+					if (i < Bin.size() - 1 && j >0) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i + 1][j - 1].begin(), Bin[i + 1][j - 1].end());// (i+1, j-1)
+					if (i > 0 && j < Bin.size() - 1) NeighborList_local[localAtomID].insert(NeighborList_local[localAtomID].end(), Bin[i - 1][j + 1].begin(), Bin[i - 1][j + 1].end());// (i-1, j+1)
+				//}
 			}
 		}
 	}
@@ -183,28 +186,37 @@ void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<i
 
 
 // A function to determine the fi-- forces acting over the i-th atom
-void ApplyForce(std::vector<atom>& Atoms,double eps, double sig)
+void ApplyForce(std::vector<atom>& Atoms, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<int>> NeighborList_local, double eps, double sig)
 {
 	for (int i=0;i<Atoms.size();i++)
 	{
 		Atoms[i].f = { 0,0 };
-		for (int j=0;j<Atoms[i].NeighbIndex.size();j++)\
+		for (int j=0;j< NeighborList_local[i].size(); j++)
 		{
-			int Indj = Atoms[i].NeighbIndex[j];
-			// Magnitude of the force between particles i and j 
-			TwoDvec<double> rij = Atoms[i].pos - Atoms[Indj].pos;
+			//int IndjGlobal = Atoms[i].NeighbIndex[j];
+			int IndjGlobal = NeighborList_local[i][j];
+			std::vector<int>::iterator itr = std::find(GlobalToLocalIndex.begin(), GlobalToLocalIndex.end(), IndjGlobal);
+			int indjLocal = IndjGlobal;
+			/*if (itr != GlobalToLocalIndex.end())
+			{*/
+				//int indjLocal = std::distance(GlobalToLocalIndex.begin(), itr);
+				// Magnitude of the force between particles i and j 
+				TwoDvec<double> rij = Atoms[i].pos - Atoms[indjLocal].pos;
 
-			double r = rij.norm();
-			if (r != 0 && r <= rcut_off)
-			{
-				// The direction of the force between the particles i and j 
-				TwoDvec<double> nij = rij / r;
+				double r = rij.norm();
+				if (r != 0 && r <= rcut_off)
+				{
+					// The direction of the force between the particles i and j 
+					TwoDvec<double> nij = rij / r;
 
-				double Fij = 4 * eps * ((12 * pow(sig, 12) / pow(r, 13)) - (6 * pow(sig, 6) / pow(r, 7)));
+					double Fij = 4 * eps * ((12 * pow(sig, 12) / pow(r, 13)) - (6 * pow(sig, 6) / pow(r, 7)));
 
-				// Update the force components for the i-th particle in 2D
-				Atoms[i].f -= nij * Fij;
-			}
+					// Update the force components for the i-th particle in 2D
+					Atoms[i].f -= nij * Fij;
+				}
+			
+			//}
+			
 		}
 	}
 }
@@ -501,9 +513,67 @@ void AtomsToGRO(std::string filename, std::vector<std::vector<atom>> AlltimeAtom
 
 
 
-
 //////////////////////////// MPI IMPLEMENTATION FUNCTIONS /////////////////////////////////////////////
-void SpatialDecomp() 
+void SpatialDecomp(std::vector<atom> Atoms,int Nproc, double DX, double DY, int Ndx, int Ndy, std::vector <std::vector<int>> &GlobalToLocalIndex,
+	std::vector<std::vector<atom>> &Partitions, std::vector<std::vector<atom>>& GhostPart, std::vector <std::vector<int>>& GlobalToLocalIndexGhost)
 {
+	double cutoff = rcut_off;
+	// Decompose the atoms into spatial blocks
+	for (int i = 0; i < Atoms.size(); i++)
+	{
+		int I = std::ceil(Atoms[i].pos[0] / DX);
+		int J = std::ceil(Atoms[i].pos[1] / DY);
+		I = (I == 0) ? I += 1 : I;
+		J = (J == 0) ? J += 1 : J;
+		int ProcRank = (J - 1) * Ndx + I - 1;
+		//std::cout <<i<<" " << "; Dx: " << DX <<"Dy: "<<DY<< " " << I << J << " " << "ProcRank: " << ProcRank << "\n";
+		GlobalToLocalIndex[ProcRank].push_back(i);
+		Partitions[ProcRank].push_back(Atoms[i]);
+	}
+
+	// Assign the ghost atoms for each process
+	for (int r = 0; r < Nproc; r++)
+	{
+		// Map the rank of the process (r) to the (i,j) domain
+		int Jp = std::ceil((r + 1) /(double) Ndx);
+		int Ip = (r + 1) - (Jp - 1) * Ndx;
+		//std::cout << "rank: " << r << "Ip: " << Ip << "Jp: " << Jp << "Nx: " << Ndx << "Ny: " << Ndy << "\n";
+		// Find the x-y boundaries of the processor
+		double xi = (Ip - 1) * DX, xf = Ip * DX;
+		double yi = (Jp - 1) * DY, yf = Jp * DY;
+		//std::cout << "xi: " << xi << " xf:" << xf << " yi: " << yi << " yf:" << yf << "\n";
+		for (int i = 0; i < Atoms.size(); i++)
+		{
+			if (xi - cutoff <= Atoms[i].pos[0] && Atoms[i].pos[0] < xi)
+			{
+				GhostPart[r].push_back(Atoms[i]);
+				GlobalToLocalIndexGhost[r].push_back(i);
+				//std::cout << "xGhost: " << Atoms[i].pos[0] << " yGhost: " << Atoms[i].pos[1] << "\n";
+				continue; // you dont wanna add a ghost atoms twice, right?
+			}
+			if (xf < Atoms[i].pos[0] && Atoms[i].pos[0] <= xf + cutoff)
+			{
+				GhostPart[r].push_back(Atoms[i]);
+				GlobalToLocalIndexGhost[r].push_back(i);
+				//std::cout << "xGhost: " << Atoms[i].pos[0] << " yGhost: " << Atoms[i].pos[1] << "\n";
+				continue;
+			}
+
+			if (yi - cutoff <= Atoms[i].pos[1] && Atoms[i].pos[1] < yi)
+			{
+				GhostPart[r].push_back(Atoms[i]);
+				GlobalToLocalIndexGhost[r].push_back(i);
+				//std::cout << "xGhost: " << Atoms[i].pos[0] << " yGhost: " << Atoms[i].pos[1] << "\n";
+				continue;
+			}
+			if (yf < Atoms[i].pos[1] && Atoms[i].pos[1] <= yf + cutoff)
+			{
+				GhostPart[r].push_back(Atoms[i]);
+				GlobalToLocalIndexGhost[r].push_back(i);
+				//std::cout << "xGhost: " << Atoms[i].pos[0] << " yGhost: " << Atoms[i].pos[1] << "\n";
+				continue;
+			}
+		}
+	}
 
 }
