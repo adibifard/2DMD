@@ -101,10 +101,11 @@ int main(int argc, char** argv)
 	MPI_Type_commit(&MPIVectInt);
 	
 	// MPI data type for atom-type structure
-	int const count = 7; // number of members in the structure
-	int blocklengths[count] = { 1, 2 ,2,2,2,2,2}; // length of each block of the structure
-	MPI_Aint offsets[count] = { offsetof(atom,m),offsetof(atom,pos),offsetof(atom,v),offsetof(atom,a0),offsetof(atom,a1),offsetof(atom,f),offsetof(atom,binIJ)};
-	MPI_Datatype AtomType[count] = { MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE ,MPI_DOUBLE ,MPI_DOUBLE ,MPI_DOUBLE,MPI_DOUBLE };
+	int const count = 9; // number of members in the structure
+	int blocklengths[count] = { 1, 2 ,2,2,2,2,2,1,1}; // length of each block of the structure
+	MPI_Aint offsets[count] = { offsetof(atom,m),offsetof(atom,pos),offsetof(atom,v),offsetof(atom,a0),offsetof(atom,a1),
+		offsetof(atom,f),offsetof(atom,binIJ),offsetof(atom,w),offsetof(atom,ind)};
+	MPI_Datatype AtomType[count] = { MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE ,MPI_DOUBLE ,MPI_DOUBLE ,MPI_DOUBLE,MPI_DOUBLE,MPI_INT,MPI_INT };
 	MPI_Datatype MPIAtom;
 	MPI_Type_create_struct(count, blocklengths, offsets, AtomType, &MPIAtom);
 	MPI_Type_commit(&MPIAtom);// commit the defined MPI data type
@@ -132,12 +133,15 @@ int main(int argc, char** argv)
 	std::vector<atom> GhostAtoms_local;
 	std::vector<int>  GlobalToLocalindex_local;
 	std::vector<int>  GlobalToLocalIndexGhost_local;
-	std::vector<std::vector<std::vector<int>>> Bin_local(Nb); // initialize the Bin structure
-	std::vector<std::vector<int>> NeighborList_local;
+	std::vector<std::vector<std::vector<atom>>> Bin_local(Nb); // initialize the Bin structure
+	std::vector<std::vector<std::vector<int>>> BinGhost_local(Nb); // initialize the Bin structure for the ghost atoms
+	std::vector<std::vector<atom>> NeighborList_local;     // Neighboring list that comprises local atoms
+	std::vector<std::vector<int>> NeighborListGhost_local; // Neighboring list that only comprises ghost atoms
 
 	for (int i = 0; i < Nb; i++)
 	{
 		Bin_local[i].resize(Nb);
+		BinGhost_local[i].resize(Nb);
 	}
 	
 	if (rank == Proot)
@@ -156,6 +160,7 @@ int main(int argc, char** argv)
 		SpatialDecomp(Atoms, Nproc, DX, DY, Ndx, Ndy, GlobalToLocalIndex,
 			Partitions, GhostPart, GlobalToLocalIndexGhost);
 		
+
 	}
 	
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -163,8 +168,10 @@ int main(int argc, char** argv)
 	if (rank==Proot)
 	{
 		int DataSize;
-		Atoms_local = Partitions[0];
-		NeighborList_local.resize(Atoms_local.size());
+		Atoms_local.insert(Atoms_local.end(), Partitions[0].begin(), Partitions[0].end()); // Add owned atoms
+		Atoms_local.insert(Atoms_local.end(), GhostPart[0].begin(), GhostPart[0].end());   // Add the ghost atoms
+		NeighborList_local.resize(Partitions[0].size()); // the Neighboring list should only contain the owned atoms
+
 		GlobalToLocalindex_local = GlobalToLocalIndex[0];
 		GhostAtoms_local = GhostPart[0];
 		GlobalToLocalIndexGhost_local = GlobalToLocalIndexGhost[0];
@@ -202,7 +209,7 @@ int main(int argc, char** argv)
 		MPI_Recv(&DataSize_local, 1, MPI_INT, Proot, rank+1, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the size of the data
 		Atoms_local.resize(DataSize_local);
 		MPI_Recv(Atoms_local.data(), DataSize_local, MPIAtom, Proot, rank+2, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the data itself
-		NeighborList_local.resize(Atoms_local.size()); // Resize the neighbronig list
+		NeighborList_local.resize(Atoms_local.size()); // Resize the neighbronig list (only based on the owned atoms per process)
 
 		// Receive the global to local index information (main atoms)
 		MPI_Recv(&DataSize_local, 1, MPI_INT, Proot, rank+3, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the size of the data
@@ -213,6 +220,7 @@ int main(int argc, char** argv)
 		MPI_Recv(&DataSize_local, 1, MPI_INT, Proot, rank + 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the size of the data
 		GhostAtoms_local.resize(DataSize_local);
 		MPI_Recv(GhostAtoms_local.data(), DataSize_local, MPIAtom, Proot, rank + 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the data itself
+		Atoms_local.insert(Atoms_local.end(), GhostAtoms_local.begin(), GhostAtoms_local.end()); // All atoms in process p=owned atoms+ghost atoms
 
 		// Receive the global to local index information (ghost atoms)
 		MPI_Recv(&DataSize_local, 1, MPI_INT, Proot, rank + 7, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the size of the data
@@ -238,15 +246,17 @@ int main(int argc, char** argv)
 	// loop over the number of time steps
 	for (size_t i = 0; i <= NTsteps; i++)
 	{
+		
 		if (i==0)
 		{
 			// Divide particles into bins (By Meisam)
-			BinParticles(Atoms_local, binSize, Bin_local);
+			BinParticles(Atoms_local, binSize, Bin_local); // for owned atoms
 			// Find the neighboring list
-			Neighboring(Atoms_local, Bin_local, GlobalToLocalindex_local, NeighborList_local);
+			Neighboring(Atoms_local, Bin_local, GlobalToLocalindex_local, NeighborList_local); // for owned atoms (the neighboring can contain ghost atoms as well)
 			// Apply pair-wise forces (By Meisam)
 			ApplyForce(Atoms_local, GlobalToLocalindex_local, NeighborList_local, eps, sigma);
 		}
+
 		double KineticEnergy = 0;
 
 		//  Compute accelerations from forces at current position (do calculations locally)
@@ -273,12 +283,11 @@ int main(int argc, char** argv)
 		// Update the bins
 		BinParticles(Atoms_local, binSize, Bin_local);
 
-
 		// Find the neighboring atoms for the atoms owned by the process of rank=rank
-		Neighboring(Atoms_local, Bin_local, GlobalToLocalIndex[rank], NeighborList_local);
+		Neighboring(Atoms_local, Bin_local, GlobalToLocalindex_local, NeighborList_local);
 
-		// Update force at t+dt
-		ApplyForce(Atoms_local, GlobalToLocalIndex[rank], NeighborList_local, eps, sigma);
+		// Update force at t+dt: f(t+dt)
+		ApplyForce(Atoms_local, GlobalToLocalindex_local, NeighborList_local, eps, sigma);
 		
 		// Determine a(t+dt) and v(t+dt)
 		for (atom& atom1 : Atoms_local)
@@ -332,8 +341,10 @@ int main(int argc, char** argv)
 		if (rank == Proot)
 		{
 			int DataSize;
-			Atoms_local = Partitions[0];
-			NeighborList_local.resize(Atoms_local.size());
+			Atoms_local.insert(Atoms_local.end(), Partitions[0].begin(), Partitions[0].end()); // Add owned atoms
+			Atoms_local.insert(Atoms_local.end(), GhostPart[0].begin(), GhostPart[0].end());   // Add the ghost atoms
+			NeighborList_local.resize(Partitions[0].size()); // the Neighboring list should only contain the owned atoms
+
 			GlobalToLocalindex_local = GlobalToLocalIndex[0];
 			GhostAtoms_local = GhostPart[0];
 			GlobalToLocalIndexGhost_local = GlobalToLocalIndexGhost[0];
@@ -381,6 +392,7 @@ int main(int argc, char** argv)
 			MPI_Recv(&DataSize_local, 1, MPI_INT, Proot, rank + 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the size of the data
 			GhostAtoms_local.resize(DataSize_local);
 			MPI_Recv(GhostAtoms_local.data(), DataSize_local, MPIAtom, Proot, rank + 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the data itself
+			Atoms_local.insert(Atoms_local.end(), GhostAtoms_local.begin(), GhostAtoms_local.end()); // All atoms in process p=owned atoms+ghost atoms
 
 			// Receive the global to local index information (ghost atoms)
 			MPI_Recv(&DataSize_local, 1, MPI_INT, Proot, rank + 7, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // receive the size of the data

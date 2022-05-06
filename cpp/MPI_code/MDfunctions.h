@@ -113,6 +113,8 @@ typedef struct atom
 	TwoDvec<double> f; // 2D force
 	TwoDvec<int> binIJ; // (i,j) pairs of the bin containing the particle
 	//std::vector<int> NeighbIndex;
+	int w; // An integer to recognize whether the atom is the owned atom or the ghost atom for the process p (1: owned, 0:ghost)
+	int ind; // index of the atom in the contained array
 };
 
 class PBC_images
@@ -135,15 +137,15 @@ void InitAtomsVel(std::vector<atom> &Atoms, double T,int Na);
 double SumMomentum(std::vector<atom> Atoms);
 
 double setBoxSize(const double density, const int N);
-void BinParticles(std::vector<atom>& Atoms, const double BinSize, std::vector<std::vector<std::vector<int>>>& Bin);
+void BinParticles(std::vector<atom>& Atoms, const double BinSize, std::vector<std::vector<std::vector<atom>>>& Bin);
 // Integration Algorithms
 void Euler(atom &particle,double dt);
-void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize);
+//void VelVerlet(std::vector<atom>& Atoms, double dt, double eps, double sig, std::vector<std::vector<std::vector<int>>>& Bin, double binSize);
 void PBC(double& x);
 
 // Force calculations
-void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<int>>> Bin, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<int>>& NeighborList_local);
-void ApplyForce(std::vector<atom>& Atoms, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<int>> NeighborList_local, double eps, double sig);
+void Neighboring(std::vector<atom>& Atoms, std::vector<std::vector<std::vector<atom>>> Bin, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<atom>>& NeighborList_local);
+void ApplyForce(std::vector<atom>& Atoms, std::vector<int> GlobalToLocalIndex, std::vector<std::vector<atom>> NeighborList_local, double eps, double sig);
 // functions for property calculations
 void CalcInstanKE(std::vector<atom> Atoms, double& KE);
 double CalcInstanPE(std::vector<atom> Atoms);
