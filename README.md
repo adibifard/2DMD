@@ -1,1 +1,1 @@
-# 2DMD
+# 2DMD-MPI
